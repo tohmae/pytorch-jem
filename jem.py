@@ -8,6 +8,7 @@ import torch.nn.functional as F
 
 from ignite.engine.engine import Engine, State, Events
 from ignite.utils import convert_tensor
+from ignite.metrics import Average
 
 eta = 20
 alpha = 1.0
@@ -146,7 +147,15 @@ def create_supervised_trainer2(model, optimizer, loss_fn,
         loss = loss_elf + loss_gen
         loss.backward()
         optimizer.step()
-        return loss.item()
+        return {'loss':loss.item(), 'loss_elf':loss_elf.item(), 'loss_gen':loss_gen.item()}
 
-    return Engine(_update)
+    engine = Engine(_update)
+    metric_loss = Average(output_transform=lambda output: output['loss'])
+    metric_loss_elf = Average(output_transform=lambda output: output['loss_elf'])
+    metric_loss_gen = Average(output_transform=lambda output: output['loss_gen'])
+    metric_loss.attach(engine, "loss")
+    metric_loss_elf.attach(engine, "loss_elf")
+    metric_loss_gen.attach(engine, "loss_gen")
+
+    return engine
 

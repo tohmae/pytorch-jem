@@ -105,13 +105,22 @@ def main(batch_size, epochs):
     def log_training_loss(engine):
         i = (engine.state.iteration - 1) % len(train_loader) + 1
         if i % log_interval == 0:
-            pbar.desc = desc.format(engine.state.output)
+            pbar.desc = desc.format(engine.state.output['loss'])
             pbar.update(log_interval)
 
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(engine):
         pbar.refresh()
+        engine_metrics = engine.state.metrics
+        avg_loss = engine_metrics['loss']
+        avg_loss_elf = engine_metrics['loss_elf']
+        avg_loss_gen = engine_metrics['loss_gen']
+        tqdm.write(
+            "Engine Results - Epoch: {}  Avg loss: {:.4f} Avg loss elf: {:.4f} Avg loss gen:{:.4f}"
+            .format(engine.state.epoch, avg_loss, avg_loss_elf, avg_loss_gen)
+        )
+
         train_evaluator.run(train_loader)
         metrics = train_evaluator.state.metrics
         avg_accuracy = metrics['accuracy']
