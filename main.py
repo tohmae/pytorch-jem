@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -68,12 +69,12 @@ def  main():
     epochs = 20
  
     # 3. MNISTのデータセットを取得
-    from sklearn.datasets import fetch_mldata
-    mnist = fetch_mldata('MNIST original', data_home='./')
+    from sklearn.datasets import fetch_openml
+    mnist = fetch_openml('mnist_784', version=1,)
  
     # 4. データの設定（入力データは閉区間[0, 1]に正規化する）
     x = mnist.data / 255
-    y = mnist.target
+    y = mnist.target.astype(np.int32)
  
     # 5. DataLoaderの作成
     from torch.utils.data import TensorDataset, DataLoader

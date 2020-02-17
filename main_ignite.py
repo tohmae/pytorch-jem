@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch import optim
 import torch.nn as nn
@@ -10,17 +11,17 @@ from ignite.engine import Events, create_supervised_trainer, create_supervised_e
 from ignite.handlers import ModelCheckpoint, EarlyStopping
 from ignite.metrics import Accuracy, Loss
 
-from sklearn.datasets import fetch_mldata
+from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
 def get_data_loaders(batch_size):
     # 1. MNISTのデータセットを取得
-    mnist = fetch_mldata('MNIST original', data_home='./')
+    mnist = fetch_openml('mnist_784', version=1,)
 
     # 2. データの設定（入力データは閉区間[0, 1]に正規化する）
     x = mnist.data / 255
-    y = mnist.target
+    y = mnist.target.astype(np.int32)
 
     # 3. DataLoaderの作成
 
@@ -28,8 +29,10 @@ def get_data_loaders(batch_size):
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=1/7, random_state=0)
  
     # 3-2. データのフォーマットを変換：PyTorchでの形式 = [画像数，チャネル数，高さ，幅]
-    x_train = x_train.reshape(60000, 1, 28, 28)
-    x_test = x_test.reshape(10000, 1, 28 ,28)
+#    x_train = x_train.reshape(60000, 1, 28, 28)
+#    x_test = x_test.reshape(10000, 1, 28 ,28)
+    x_train = x_train.reshape(60000, 28* 28)
+    x_test = x_test.reshape(10000, 28*28)
  
     # 3-3. PyTorchのテンソルに変換
     x_train = torch.Tensor(x_train)
